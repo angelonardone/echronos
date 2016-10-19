@@ -62,34 +62,34 @@ py -%PYVER% x.py build prj
 py -%PYVER% x.py build packages
 @IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
 
-py -%PYVER% prj/app/prj.py build stub.acamar
+py -%PYVER% %COREDIR%/prj/app/prj.py build stub.acamar
 @IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
-py -%PYVER% prj/app/prj.py build stub.acrux
+py -%PYVER% %COREDIR%/prj/app/prj.py build stub.acrux
 @IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
-py -%PYVER% prj/app/prj.py build stub.gatria
+py -%PYVER% %COREDIR%/prj/app/prj.py build stub.gatria
 @IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
-py -%PYVER% prj/app/prj.py build stub.kochab
+py -%PYVER% %COREDIR%/prj/app/prj.py build stub.kochab
 @IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
-py -%PYVER% prj/app/prj.py build stub.kraz
+py -%PYVER% %COREDIR%/prj/app/prj.py build stub.kraz
 @IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
-py -%PYVER% prj/app/prj.py build stub.phact
+py -%PYVER% %COREDIR%/prj/app/prj.py build stub.phact
 @IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
-py -%PYVER% prj/app/prj.py build stub.rigel
+py -%PYVER% %COREDIR%/prj/app/prj.py build stub.rigel
 @IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
 
-py -%PYVER% prj/app/prj.py analyze stub.acamar
+py -%PYVER% %COREDIR%/prj/app/prj.py analyze stub.acamar
 @IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
-py -%PYVER% prj/app/prj.py analyze stub.acrux
+py -%PYVER% %COREDIR%/prj/app/prj.py analyze stub.acrux
 @IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
-py -%PYVER% prj/app/prj.py analyze stub.gatria
+py -%PYVER% %COREDIR%/prj/app/prj.py analyze stub.gatria
 @IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
-py -%PYVER% prj/app/prj.py analyze stub.kochab
+py -%PYVER% %COREDIR%/prj/app/prj.py analyze stub.kochab
 @IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
-py -%PYVER% prj/app/prj.py analyze stub.kraz
+py -%PYVER% %COREDIR%/prj/app/prj.py analyze stub.kraz
 @IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
-py -%PYVER% prj/app/prj.py analyze stub.phact
+py -%PYVER% %COREDIR%/prj/app/prj.py analyze stub.phact
 @IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
-py -%PYVER% prj/app/prj.py analyze stub.rigel
+py -%PYVER% %COREDIR%/prj/app/prj.py analyze stub.rigel
 @IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
 
 py -%PYVER% x.py build partials
