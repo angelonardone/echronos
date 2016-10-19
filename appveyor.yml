@@ -31,7 +31,7 @@ branches:
         - abandoned/*
 clone_depth: 1
 environment:
-    PATH: C:\splint-3.1.1\bin;C:\msys64\mingw64\bin;%PATH%;C:\Program Files\Git\cmd
+    PATH: C:\msys64\mingw64\bin;%PATH%;C:\Program Files\Git\cmd
     matrix:
         - PYVER: 3.5
         - PYVER: 3.4
@@ -39,47 +39,8 @@ environment:
         # Therefore, the project also does not have to support it.
         # However, we still test against this version to learn when we break Python 3.3 support.
         - PYVER: 3.3
-build_script:
-    - pwd
-    - curl -fsS -o splint-3.1.1.win32.zip http://www.splint.org/downloads/binaries/splint-3.1.1.win32.zip
-    - powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('splint-3.1.1.win32.zip', 'C:\'); }"
-    - del splint-3.1.1.win32.zip
-test_script:
-    - py -%PYVER% --version
-    - git --version
-    - gcc --version
-    - splint --help
-
-    - py -%PYVER% x.py test licenses
-    - py -%PYVER% x.py test provenance
-    - py -%PYVER% x.py test x
-    - py -%PYVER% x.py test style
-    - py -%PYVER% x.py test pystache
-    - py -%PYVER% x.py test prj
-    - REM py -%PYVER% x.py test units
-    - py -%PYVER% x.py test systems
-    - py -%PYVER% x.py build prj
-    - py -%PYVER% x.py build packages
-
-    - py -%PYVER% prj/app/prj.py build stub.acamar
-    - py -%PYVER% prj/app/prj.py build stub.acrux
-    - py -%PYVER% prj/app/prj.py build stub.gatria
-    - py -%PYVER% prj/app/prj.py build stub.kochab
-    - py -%PYVER% prj/app/prj.py build stub.kraz
-    - py -%PYVER% prj/app/prj.py build stub.phact
-    - py -%PYVER% prj/app/prj.py build stub.rigel
-
-    - py -%PYVER% prj/app/prj.py analyze stub.acamar
-    - py -%PYVER% prj/app/prj.py analyze stub.acrux
-    - py -%PYVER% prj/app/prj.py analyze stub.gatria
-    - py -%PYVER% prj/app/prj.py analyze stub.kochab
-    - py -%PYVER% prj/app/prj.py analyze stub.kraz
-    - py -%PYVER% prj/app/prj.py analyze stub.phact
-    - py -%PYVER% prj/app/prj.py analyze stub.rigel
-
-    - py -%PYVER% x.py build partials
-    - py -%PYVER% x.py build docs
-    - py -%PYVER% x.py build release
+build_script: test_setup.bat
+test_script: test.bat
 artifacts:
 - path: packages\*\rtos-*\docs.pdf
   name: documentation
