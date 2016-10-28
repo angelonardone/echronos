@@ -24,6 +24,7 @@
 #
 # @TAG(NICTA_AGPL)
 #
+
 version: 1.0.{build}
 branches:
     except:
