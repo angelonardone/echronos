@@ -25,6 +25,7 @@
 # @TAG(NICTA_AGPL)
 #
 import os
+import zipfile
 from prj import execute, SystemBuildError
 
 
@@ -33,12 +34,16 @@ schema = {
     'name': 'module',
     'dict_type': ([{'type': 'string', 'name': 'mmcu', 'default': 'atmega328p'},
                    {'type': 'int', 'name': 'cpu_frequency', 'default': '16000000'},
-                   {'type': 'int', 'name': 'baud', 'default': '9600'}], [])
+                   {'type': 'int', 'name': 'baud', 'default': '9600'},
+                   {'type': 'string', 'name': 'arduino_library', 'default': ''}], [])
 }
 
 
 def run(system, configuration=None):
-    return system_build(system, configuration)
+    if configuration['arduino_library']:
+        return system_generate_arduino_library(system, configuration['arduino_library'])
+    else:
+        return system_build(system, configuration)
 
 
 def system_build(system, configuration):
@@ -54,7 +59,8 @@ def system_build(system, configuration):
         os.makedirs(os.path.dirname(o), exist_ok=True)
         execute(['avr-gcc'] + a_flags + inc_path_args + ['-o', o, s])
 
-    c_obj_files = [os.path.join(system.output, os.path.basename(c.replace('.c', '.o'))) for c in system.c_files]
+    c_obj_files = [c.replace('.c', '.o') if c.startswith(system.output) else
+                   os.path.join(system.output, os.path.basename(c.replace('.c', '.o'))) for c in system.c_files]
     for c, o in zip(system.c_files, c_obj_files):
         os.makedirs(os.path.dirname(o), exist_ok=True)
         execute(['avr-gcc'] + c_flags + inc_path_args + ['-o', o, c])
@@ -71,3 +77,22 @@ def system_build(system, configuration):
     print('''Default commands for debugging with avr-gdb and simulavr:
  simulavr -d {} -g
  avr-gdb -ex "target remote localhost:1212" -ex load {}'''.format(configuration['mmcu'].lower(), system.output_file))
+
+
+def system_generate_arduino_library(system, lib_name):
+    zip_file_path = lib_name + '.zip'
+    with zipfile.ZipFile(zip_file_path, mode='w', compression=zipfile.ZIP_DEFLATED) as zip_file:
+        file_paths = system.asm_files + system.c_files
+
+        for file_path in file_paths:
+            base, ext = os.path.splitext(file_path)
+            if ext != '.h':
+                header_file_path = base + '.h'
+                if os.path.isfile(header_file_path):
+                    file_paths.append(header_file_path)
+
+        for file_path in file_paths:
+            archive_file_path = os.path.join(lib_name, os.path.basename(file_path)).replace(os.sep, '/')
+            zip_file.write(file_path, arcname=archive_file_path)
+
+    print("Created Arduino library file '{}'".format(zip_file_path))

@@ -31,7 +31,7 @@
 static void uart_init(void);
 
 void
-debug_putc(const char c)
+debug_puts(const char *c)
 {
     static bool uart_is_initialized;
 
@@ -41,8 +41,12 @@ debug_putc(const char c)
         uart_is_initialized = true;
     }
 
-    loop_until_bit_is_set(UCSR0A, UDRE0);
-    UDR0 = c;
+    while (*c)
+    {
+        loop_until_bit_is_set(UCSR0A, UDRE0);
+        UDR0 = *c;
+        c += 1;
+    }
 }
 
 static void uart_init(void)
