@@ -34,6 +34,7 @@
             <cpu_frequency>16000000</cpu_frequency>
             <baud>9600</baud>
             <arduino_library></arduino_library -->
+            <debug>True</debug>
         </module>
         <module name="avr.debug"/>
         <module name="generic.debug"/>

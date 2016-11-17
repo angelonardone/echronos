@@ -32,7 +32,9 @@
             <!-- this system can be customized with several options; defaults for Arduino UNO below
             <mmcu>atmega328p</mmcu>
             <cpu_frequency>16000000</cpu_frequency>
-            <baud>9600</baud -->
+            <baud>9600</baud>
+            <arduino_library></arduino_library -->
+            <debug>True</debug>
         </module>
         <module name="avr.rtos-acamar">
             <prefix>rtos</prefix>

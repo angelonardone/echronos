@@ -33,7 +33,8 @@
             <mmcu>atmega328p</mmcu>
             <cpu_frequency>16000000</cpu_frequency>
             <baud>9600</baud>
-            <arduino_library></arduino_library -->
+            <arduino_library></arduino_library>
+            <debug>False</debug -->
             <arduino_library>rtos-gatria</arduino_library>
         </module>
         <module name="avr.rtos-gatria">
