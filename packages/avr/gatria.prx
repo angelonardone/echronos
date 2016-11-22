@@ -29,7 +29,7 @@
 <system>
     <modules>
         <module name="avr.build">
-            <mmcu>atmega328p</mmcu>
+            <mmcu>atmega128</mmcu>
             <cpu_frequency>16000000</cpu_frequency>
             <baud>9600</baud>
             <arduino_library></arduino_library>

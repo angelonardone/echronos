@@ -1,0 +1,67 @@
+0x00000000 in __vectors ()
+Loading section .text, size 0x476 lma 0x0
+Loading section .data, size 0x8a lma 0x476
+Start address 0x0, load size 1280
+Transfer rate: 25 KB/sec, 31 bytes/write.
+Breakpoint 1 at 0x384: file out\avr\gatria\generic.debug.c, line 58.
+
+Breakpoint 1, debug_println (msg=0x800138 "task a -- lock")
+    at out\avr\gatria\generic.debug.c:58
+58	    debug_print(msg);
+1: rtos_internal_current_task = 0 '\0'
+
+Breakpoint 1, debug_println (msg=0x800100 "task b -- try lock")
+    at out\avr\gatria\generic.debug.c:58
+58	    debug_print(msg);
+1: rtos_internal_current_task = 1 '\001'
+
+Breakpoint 1, debug_println (msg=0x800164 "task a -- unlock")
+    at out\avr\gatria\generic.debug.c:58
+58	    debug_print(msg);
+1: rtos_internal_current_task = 0 '\0'
+
+Breakpoint 1, debug_println (msg=0x800113 "task b -- got lock")
+    at out\avr\gatria\generic.debug.c:58
+58	    debug_print(msg);
+1: rtos_internal_current_task = 1 '\001'
+
+Breakpoint 1, debug_println (msg=0x800126 "task b")
+    at out\avr\gatria\generic.debug.c:58
+58	    debug_print(msg);
+1: rtos_internal_current_task = 1 '\001'
+
+Breakpoint 1, debug_println (msg=0x80012d "b blocking")
+    at out\avr\gatria\generic.debug.c:58
+58	    debug_print(msg);
+1: rtos_internal_current_task = 1 '\001'
+
+Breakpoint 1, debug_println (msg=0x800175 "task a")
+    at out\avr\gatria\generic.debug.c:58
+58	    debug_print(msg);
+1: rtos_internal_current_task = 0 '\0'
+
+Breakpoint 1, debug_println (msg=0x80017c "unblocking b")
+    at out\avr\gatria\generic.debug.c:58
+58	    debug_print(msg);
+1: rtos_internal_current_task = 0 '\0'
+
+Breakpoint 1, debug_println (msg=0x800126 "task b")
+    at out\avr\gatria\generic.debug.c:58
+58	    debug_print(msg);
+1: rtos_internal_current_task = 1 '\001'
+
+Breakpoint 1, debug_println (msg=0x800175 "task a")
+    at out\avr\gatria\generic.debug.c:58
+58	    debug_print(msg);
+1: rtos_internal_current_task = 0 '\0'
+
+Breakpoint 1, debug_println (msg=0x800126 "task b")
+    at out\avr\gatria\generic.debug.c:58
+58	    debug_print(msg);
+1: rtos_internal_current_task = 1 '\001'
+
+Breakpoint 1, debug_println (msg=0x800175 "task a")
+    at out\avr\gatria\generic.debug.c:58
+58	    debug_print(msg);
+1: rtos_internal_current_task = 0 '\0'
+The program is running.  Exit anyway? (y or n) [answered Y; input not from terminal]
