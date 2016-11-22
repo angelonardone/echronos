@@ -83,7 +83,7 @@ import logging
 import os
 import sys
 
-externals = ['nose', '']
+externals = ['nose', 'Python-{}.{}'.format(sys.version_info[0], sys.version_info[1]), '']
 
 # Make pylib available for importing - this is necessary for x.py wrappers in client repositories to work
 sys.path.append(os.path.dirname(__file__))
