@@ -397,9 +397,12 @@ class GdbTestCase(unittest.TestCase):
             rel_prx_path = os.path.join('packages', self.system_name.replace('.', os.sep) + '.prx')
             self.prx_path = list(base_to_top_paths(topdir, rel_prx_path))[0]
         self.executable_path = os.path.abspath(os.path.join('out', self.system_name.replace('.', os.sep),
-                                                            'system' + get_executable_extension()))
+                                                            self._get_executable_name()))
         self.gdb_commands_path = os.path.splitext(self.prx_path)[0] + '.gdb'
         self._build()
+
+    def _get_executable_name(self):
+        return 'system' + get_executable_extension()
 
     def test(self):
         assert os.path.exists(self.executable_path)
@@ -423,11 +426,19 @@ class GdbTestCase(unittest.TestCase):
                               ['build', self.system_name])
 
     def _get_test_output(self):
+        self._start_helpers()
         test_command = self._get_test_command()
         self.gdb_output = subprocess.check_output(test_command)
         # for an unknown reason, decode() handles Windows line breaks incorrectly so convert them to UNIX linebreaks
         output_str = self.gdb_output.replace(b'\r\n', b'\n').decode()
+        self._stop_helpers()
         return self._filter_gdb_output(output_str)
+
+    def _start_helpers(self):
+        pass
+
+    def _stop_helpers(self):
+        pass
 
     def _get_test_command(self):
         return ('gdb', '--batch', self.executable_path, '-x', self.gdb_commands_path)
@@ -438,7 +449,15 @@ class GdbTestCase(unittest.TestCase):
 
     @staticmethod
     def _filter_gdb_output(gdb_output):
-        delete_patterns = (re.compile('^(\[New Thread .+)$'),)
+        gdb_output = GdbTestCase._join_gdb_output_lines(gdb_output)
+
+        delete_patterns = (re.compile('^(\[New Thread .+)$'),
+                           re.compile('^The program is running.  Exit anyway'),
+                           re.compile('^A debugging session is active'),
+                           re.compile('^\t+Inferior 1 \[Remote target\] will be killed'),
+                           re.compile('^Quit anyway'),
+                           re.compile('^$'),
+                           )
         replace_patterns = (re.compile('Breakpoint [0-9]+ at (0x[0-9a-f]+): file (.+), line ([0-9]+)'),
                             re.compile('^Breakpoint .* at (.+)$'),
                             re.compile('^Breakpoint [0-9]+, (0x[0-9a-f]+) in'),
@@ -446,7 +465,12 @@ class GdbTestCase(unittest.TestCase):
                             re.compile('=(0x[0-9a-f]+)'),
                             re.compile('Inferior( [0-9]+ )\[process( [0-9]+\]) will be killed'),
                             re.compile('^([0-9]+\t.+)$'),
-                            re.compile('^entry \(\) at (.+)$'))
+                            re.compile('^entry \(\) at (.+)$'),
+                            re.compile('^Transfer rate: ([0-9]+ KB)/sec, ([0-9]+ bytes)'),
+                            re.compile('^Loading section [^,]+, size (0x[0-9a-f]+) lma (0x[0-9a-f]+)'),
+                            re.compile('^Start address (0x[0-9a-f]+), load size ([0-9]+)'),
+                            re.compile("0(0+)'"),
+                            )
         filtered_result = io.StringIO()
         for line in gdb_output.splitlines(True):
             match = None
@@ -466,3 +490,48 @@ class GdbTestCase(unittest.TestCase):
                         break
             filtered_result.write(line)
         return filtered_result.getvalue()
+
+    @staticmethod
+    def _join_gdb_output_lines(gdb_output):
+        lines = []
+
+        for line in gdb_output.splitlines():
+            join = False
+
+            if lines:
+                if lines[-1].startswith('Breakpoint') and line.startswith('    at '):
+                    join = True
+
+            if join:
+                lines[-1] += ' ' + line.lstrip()
+            else:
+                lines.append(line)
+
+        return '\n'.join(lines)
+
+
+class AvrTestCase(GdbTestCase):
+    def _get_executable_name(self):
+        return 'system'
+
+    def _get_test_command(self):
+        return ('avr-gdb', '--batch', '-x', self.gdb_commands_path, self.executable_path)
+
+    def _start_helpers(self):
+        self._simulavr_output_file = open(self.executable_path + '_simulavr_output.txt', 'w')
+        self._simulavr_popen = subprocess.Popen(('simulavr', '--device', 'atmega128', '--gdbserver'),
+                                                stdout=self._simulavr_output_file, stderr=self._simulavr_output_file)
+
+    def _stop_helpers(self):
+        if sys.platform == 'win32':
+            # On Windows, terminating the simulavr process itself is insufficient.
+            # It spawns a child process and killing the parent process does not terminate the child process.
+            # Therefore, determine the child processes and terminate them explicitly.
+            import psutil  # import here so that all other x.py functionality can be used without psutil
+            parent_process = psutil.Process(self._simulavr_popen.pid)
+            child_processes = parent_process.children(recursive=True)
+            for child_process in child_processes:
+               child_process.kill()
+
+        self._simulavr_popen.kill()
+        self._simulavr_output_file.close()
