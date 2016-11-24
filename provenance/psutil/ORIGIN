@@ -1,0 +1,6 @@
+https://pypi.python.org/pypi/psutil/5.0.0
+
+#!/bin/sh
+for PYVER in 3.3 3.4 3.5 3.6; do
+    py -${PYVER} -m pip install --target=external_tools/Python-${PYVER} --no-compile psutil
+done
