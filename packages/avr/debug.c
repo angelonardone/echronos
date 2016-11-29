@@ -26,7 +26,12 @@
  */
 #include <stdbool.h>
 #include <avr/io.h>
+#if defined (__AVR_ATmega128__)
+#elif defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__)
 #include <util/setbaud.h>
+#else
+#error unsupported hardware
+#endif
 
 static void uart_init(void);
 
@@ -43,7 +48,14 @@ debug_puts(const char *c)
 
     while (*c)
     {
+#if defined (__AVR_ATmega128__)
+        /* unfortunately, this breaks older versions of simulavr which we rely on for system tests */
+        /* loop_until_bit_is_set(UCSR0A, UDRE); */
+#elif defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__)
         loop_until_bit_is_set(UCSR0A, UDRE0);
+#else
+#error unsupported hardware
+#endif
         UDR0 = *c;
         c += 1;
     }
@@ -51,9 +63,16 @@ debug_puts(const char *c)
 
 static void uart_init(void)
 {
+#if defined (__AVR_ATmega128__)
+    UCSR0B = (1 << RXEN) | (1 << TXEN);
+    UCSR0C = (1 << UCSZ0) | (1 << UCSZ1);
+#elif defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__)
     UBRR0H = UBRRH_VALUE;
     UBRR0L = UBRRL_VALUE;
     UCSR0A &= ~(_BV(U2X0));
     UCSR0C = _BV(UCSZ01) | _BV(UCSZ00);
     UCSR0B = _BV(RXEN0) | _BV(TXEN0);
+#else
+#error unsupported hardware
+#endif
 }
