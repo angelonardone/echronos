@@ -24,4 +24,8 @@
 #
 # @TAG(NICTA_AGPL)
 #
-# necessary for unittest framework to discover tests
+from pylib import tests  # importing GdbTestCase would make the unittest framework to pick it up as a test case
+
+
+class Acamar(tests.GdbTestCase):
+    system_name = 'posix.acamar'

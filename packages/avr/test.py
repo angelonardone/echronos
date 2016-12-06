@@ -24,4 +24,8 @@
 #
 # @TAG(NICTA_AGPL)
 #
-# necessary for unittest framework to discover tests
+from . import avr_test_case  # importing AvrTestCase would make the unittest framework to pick it up as a test case
+
+
+class Acamar(avr_test_case.AvrTestCase):
+    system_name = 'avr.acamar'

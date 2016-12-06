@@ -346,24 +346,28 @@ def provenance(args):
 @subcmd(cmd="test", help='Run system tests, i.e., tests that check the behavior of full RTOS systems. \
 This command supports the same options as the Python nose test framework.')
 def systems(args):
-    def find_gdb_test_py_files(path):
-        for parent, dirs, files in os.walk(path):
-            for file in files:
-                if file.endswith('.py') and os.path.splitext(file)[0] + '.gdb' in files:
-                    yield os.path.join(parent, file)
-
-    tests = []
-    uargs = args.unknown_args
-    if not uargs or not isinstance(uargs[-1], str) or not uargs[-1].endswith('.py'):
-        for packages_dir in base_to_top_paths(args.topdir, 'packages'):
-            tests.extend(find_gdb_test_py_files(packages_dir))
-
-    all_tests_passed = nose.core.run(argv=[''] + args.unknown_args + tests)
-
-    if all_tests_passed:
-        return 0
-    else:
-        return 1
+    # def find_gdb_test_py_files(path):
+    #     for parent, dirs, files in os.walk(path):
+    #         for file in files:
+    #             if file.endswith('.py') and os.path.splitext(file)[0] + '.gdb' in files:
+    #                 yield os.path.join(parent, file)
+    #
+    # tests = []
+    # uargs = args.unknown_args
+    # if not uargs or not isinstance(uargs[-1], str) or not uargs[-1].endswith('.py'):
+    #     for packages_dir in base_to_top_paths(args.topdir, 'packages'):
+    #         tests.extend(find_gdb_test_py_files(packages_dir))
+    #
+    # all_tests_passed = nose.core.run(argv=[''] + args.unknown_args + tests)
+    #
+    # if all_tests_passed:
+    #     return 0
+    # else:
+    #     return 1
+    for packages_path in base_to_top_paths(args.topdir, 'packages'):
+        if not unittest.main(module=None, argv=['', 'discover', '-s', packages_path], verbosity=4).wasSuccessful():
+            return 1
+    return 0
 
 
 class GdbTestCase(unittest.TestCase):
@@ -508,30 +512,3 @@ class GdbTestCase(unittest.TestCase):
                 lines.append(line)
 
         return '\n'.join(lines)
-
-
-class AvrTestCase(GdbTestCase):
-    def _get_executable_name(self):
-        return 'system'
-
-    def _get_test_command(self):
-        return ('avr-gdb', '--batch', '-x', self.gdb_commands_path, self.executable_path)
-
-    def _start_helpers(self):
-        self._simulavr_output_file = open(self.executable_path + '_simulavr_output.txt', 'w')
-        self._simulavr_popen = subprocess.Popen(('simulavr', '--device', 'atmega128', '--gdbserver'),
-                                                stdout=self._simulavr_output_file, stderr=self._simulavr_output_file)
-
-    def _stop_helpers(self):
-        if sys.platform == 'win32':
-            # On Windows, terminating the simulavr process itself is insufficient.
-            # It spawns a child process and killing the parent process does not terminate the child process.
-            # Therefore, determine the child processes and terminate them explicitly.
-            import psutil  # import here so that all other x.py functionality can be used without psutil
-            parent_process = psutil.Process(self._simulavr_popen.pid)
-            child_processes = parent_process.children(recursive=True)
-            for child_process in child_processes:
-               child_process.kill()
-
-        self._simulavr_popen.kill()
-        self._simulavr_output_file.close()
