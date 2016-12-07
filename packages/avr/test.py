@@ -24,8 +24,21 @@
 #
 # @TAG(NICTA_AGPL)
 #
+import os.path
 from . import avr_test_case  # importing AvrTestCase would make the unittest framework to pick it up as a test case
 
 
 class Acamar(avr_test_case.AvrTestCase):
-    system_name = 'avr.acamar'
+    prx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'acamar.prx')
+
+
+class Acrux(avr_test_case.AvrTestCase):
+    prx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'acrux.prx')
+
+
+class Gatria(avr_test_case.AvrTestCase):
+    prx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gatria.prx')
+
+
+class Kraz(avr_test_case.AvrTestCase):
+    prx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'kraz.prx')

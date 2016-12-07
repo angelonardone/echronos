@@ -24,4 +24,21 @@
 #
 # @TAG(NICTA_AGPL)
 #
-from pylib.tests import AvrTestCase
+import os.path
+from . import ppce500_test_case  # importing TestCase would make the unittest framework to pick it up as a test case
+
+
+class Acamar(ppce500_test_case.Ppce500TestCase):
+    prx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'acamar-system.prx')
+
+
+class Gatria(ppce500_test_case.Ppce500TestCase):
+    prx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gatria-system.prx')
+
+
+class Hello(ppce500_test_case.Ppce500TestCase):
+    prx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'hello.prx')
+
+
+class Kraz(ppce500_test_case.Ppce500TestCase):
+    prx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'kraz-system.prx')

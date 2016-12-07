@@ -24,4 +24,4 @@
 #
 # @TAG(NICTA_AGPL)
 #
-from pylib.tests import AvrTestCase
+# necessary for unittest framework to discover tests

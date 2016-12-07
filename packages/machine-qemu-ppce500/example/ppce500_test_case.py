@@ -1,6 +1,6 @@
 #
 # eChronos Real-Time Operating System
-# Copyright (C) 2016 National ICT Australia Limited (NICTA), ABN 62 102 206 173.
+# Copyright (C) 2015  National ICT Australia Limited (NICTA), ABN 62 102 206 173.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -24,4 +24,24 @@
 #
 # @TAG(NICTA_AGPL)
 #
-from pylib.tests import AvrTestCase
+
+import os
+import subprocess
+import unittest
+from pylib import tests
+
+
+class Ppce500TestCase(tests.GdbTestCase):
+    @unittest.skipIf(os.name == 'nt', "not supported on this operating system because cross-platform toolchain is not\
+ available")
+    def setUp(self):
+        super(TestCase, self).setUp()
+        self.qemu = subprocess.Popen(('qemu-system-ppc', '-S', '-nographic', '-gdb', 'tcp::18181', '-M', 'ppce500',
+                                      '-kernel', self.executable_path))
+
+    def _get_test_command(self):
+        return ('powerpc-linux-gdb', '--batch', self.executable_path, '-x', self.gdb_commands_path)
+
+    def tearDown(self):
+        self.qemu.terminate()
+        self.qemu.wait()

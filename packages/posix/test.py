@@ -24,8 +24,21 @@
 #
 # @TAG(NICTA_AGPL)
 #
+import os.path
 from pylib import tests  # importing GdbTestCase would make the unittest framework to pick it up as a test case
 
 
 class Acamar(tests.GdbTestCase):
-    system_name = 'posix.acamar'
+    prx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'acamar.prx')
+
+
+class Acrux(tests.GdbTestCase):
+    prx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'acrux.prx')
+
+
+class Gatria(tests.GdbTestCase):
+    prx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gatria.prx')
+
+
+class Kraz(tests.GdbTestCase):
+    prx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'kraz.prx')
