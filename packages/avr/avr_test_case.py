@@ -61,4 +61,5 @@ class AvrTestCase(pylib.tests.GdbTestCase):
                child_process.kill()
 
         self._simulavr_popen.kill()
+        self._simulavr_popen.wait()
         self._simulavr_output_file.close()
