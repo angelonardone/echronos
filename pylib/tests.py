@@ -449,7 +449,9 @@ class GdbTestCase(unittest.TestCase):
 
     def _get_reference_output(self):
         reference_path = os.path.splitext(self.prx_path)[0] + '.gdbout'
-        return self._filter_gdb_output(open(reference_path).read())
+        with open(reference_path) as f:
+            reference_output = f.read()
+        return self._filter_gdb_output(reference_output)
 
     @staticmethod
     def _filter_gdb_output(gdb_output):
