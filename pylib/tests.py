@@ -35,12 +35,11 @@ from contextlib import contextmanager
 import difflib
 import io
 import re
-import nose
 import inspect
 
 from .xunittest import discover_tests, TestSuite, SimpleTestNameResult, testcase_matches, testsuite_list
 from .release import _LicenseOpener
-from .utils import get_executable_extension, BASE_DIR, find_path, base_to_top_paths
+from .utils import get_executable_extension, BASE_DIR, find_path, base_to_top_paths, get_top_dir
 from .cmdline import subcmd, Arg
 
 
@@ -343,29 +342,24 @@ def provenance(args):
     return 0
 
 
-@subcmd(cmd="test", help='Run system tests, i.e., tests that check the behavior of full RTOS systems. \
-This command supports the same options as the Python nose test framework.')
+@subcmd(cmd="test", help='Run system tests, i.e., tests that check the behavior of full RTOS systems.')
 def systems(args):
-    # def find_gdb_test_py_files(path):
-    #     for parent, dirs, files in os.walk(path):
-    #         for file in files:
-    #             if file.endswith('.py') and os.path.splitext(file)[0] + '.gdb' in files:
-    #                 yield os.path.join(parent, file)
-    #
-    # tests = []
-    # uargs = args.unknown_args
-    # if not uargs or not isinstance(uargs[-1], str) or not uargs[-1].endswith('.py'):
-    #     for packages_dir in base_to_top_paths(args.topdir, 'packages'):
-    #         tests.extend(find_gdb_test_py_files(packages_dir))
-    #
-    # all_tests_passed = nose.core.run(argv=[''] + args.unknown_args + tests)
-    #
-    # if all_tests_passed:
-    #     return 0
-    # else:
-    #     return 1
-    for packages_path in base_to_top_paths(args.topdir, 'packages'):
-        if not unittest.main(module=None, argv=['', 'discover', '-s', packages_path], verbosity=4).wasSuccessful():
+    if args.unknown_args:
+        if unittest.main(module=None, argv=[''] + args.unknown_args).wasSuccessful():
+            return 0
+        else:
+            return 1
+    else:
+        return _run_all_system_tests(args.topdir)
+
+
+def _run_all_system_tests(topdir):
+    # By convention, system tests live in the 'packages' directory.
+    # They are implemented in files that the unittest framework picks up by default, i.e., 'test*.py'.
+    # Therefore, run the unittest framework on the 'packages' directories in all client and core repositories.
+    for packages_path in base_to_top_paths(topdir, 'packages'):
+        # Make the unittest framework load and run tests from a specific 'packages' directory path
+        if not unittest.main(module=None, argv=['', 'discover', '-s', packages_path]).wasSuccessful():
             return 1
     return 0
 
@@ -377,32 +371,26 @@ class GdbTestCase(unittest.TestCase):
     The external interface of this class is that of unittest.TestCase to be accessed by the unittest or nose
     frameworks.
 
-    To use this class for new tests, import this class in a Python file under the packages/ directory.
-    That Python file needs to have the same file name as the .prx file containing the system configuration of the
-    system to build and test, the .gdb file containing the GDB commands to execute against the system executable, and
-    the .gdbout file containing the expected GDB output.
-    The default implementation of this class then picks up these files and runs the test.
-
-    If building or running or testing a system requires additional logic beyond this default implementation, create a
-    subclass of this class and extend it accordingly.
-
+    To use this class for new tests, subclass this class in a Python file under the packages/ directory and set the
+    prx_path attribute.
     """
-    system_name = None
+    prx_path = None
 
     def setUp(self):
-        topdir = os.path.abspath('.')
-        self.search_paths = list(base_to_top_paths(topdir, 'packages'))
-        if self.system_name is None:
-            py_path = inspect.getfile(self.__class__)
-            self.prx_path = os.path.splitext(py_path)[0] + '.prx'
-            rel_py_path = os.path.relpath(py_path, os.path.abspath(self.search_paths[0]))
-            self.system_name = os.path.splitext(rel_py_path)[0].replace(os.sep, '.')
-        else:
-            rel_prx_path = os.path.join('packages', self.system_name.replace('.', os.sep) + '.prx')
-            self.prx_path = list(base_to_top_paths(topdir, rel_prx_path))[0]
-        self.executable_path = os.path.abspath(os.path.join('out', self.system_name.replace('.', os.sep),
-                                                            self._get_executable_name()))
+        assert os.path.exists(self.prx_path), self.prx_path
+        assert os.path.isabs(self.prx_path), self.prx_path
+
         self.gdb_commands_path = os.path.splitext(self.prx_path)[0] + '.gdb'
+
+        parent_packages_path = os.path.join(self.prx_path.rpartition(os.sep + 'packages' + os.sep)[0], 'packages')
+        self.search_paths = [parent_packages_path]
+
+        rel_prx_path = os.path.relpath(self.prx_path, parent_packages_path)
+        self.system_name = os.path.splitext(rel_prx_path)[0].replace(os.sep, '.')
+
+        rel_executable_path = os.path.join('out', self.system_name.replace('.', os.sep), self._get_executable_name())
+        self.executable_path = os.path.abspath(rel_executable_path)
+
         self._build()
 
     def _get_executable_name(self):
