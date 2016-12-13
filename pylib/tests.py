@@ -64,11 +64,7 @@ def prj(args):
 
 @subcmd(cmd="test", args=_std_subcmd_args)
 def x(args):
-    """Run x-related tests."""
-    modules = ['x']
-    directories = ['.']
-
-    return _run_module_tests_with_args(modules, directories, args)
+    return unittest.main(module="x_test", argv=[''])
 
 
 @subcmd(cmd="test")
