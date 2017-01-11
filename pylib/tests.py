@@ -37,10 +37,11 @@ import io
 import re
 import nose
 import inspect
+from collections import namedtuple
 
 from .xunittest import discover_tests, TestSuite, SimpleTestNameResult, testcase_matches, testsuite_list
 from .release import _LicenseOpener
-from .utils import get_executable_extension, BASE_DIR, find_path, base_to_top_paths
+from .utils import get_executable_extension, BASE_DIR, find_path, base_to_top_paths, walk
 from .cmdline import subcmd, Arg
 
 
@@ -218,6 +219,8 @@ def style(args):
     appropriate exceptions.
 
     """
+    result = 0
+
     excludes = ['external_tools', 'pystache', 'tools', 'ply'] + args.excludes
     exclude_patterns = ','.join(excludes)
     options = ['--exclude=' + exclude_patterns, '--max-line-length', '118', os.path.join(args.topdir, ".")]
@@ -230,9 +233,37 @@ def style(args):
     report = style.check_files()
     if report.total_errors:
         logging.error('Python code-style check found non-compliant files')  # details on stdout
-        return 1
-    else:
-        return 0
+        result = 1
+
+    # Import pylint here instead of the top of the file so that the rest of the x.py functionality can be used without
+    # having to install pylint.
+    from pylint.lint import Run
+
+    def flt(path):
+        return os.path.splitext(path)[1] != '.py' or any([True for exclude in excludes if exclude in path])
+
+    SearchAndLibraryPaths = namedtuple('SearchAndLibraryPaths', ('search_paths', 'library_paths'))
+
+    pylint_paths = (SearchAndLibraryPaths((('', False), ('pylib', True), ('rtos', True)), tuple()),
+                    SearchAndLibraryPaths((('components', True), ('packages', True), (os.path.join('prj', 'app'), True)), (os.path.join('prj', 'app'), os.path.join('prj', 'app', 'lib'), os.path.join('prj', 'app', 'ply'))),
+                    )
+
+    for searchAndLibraryPaths in pylint_paths:
+        sys.path = [os.path.join(BASE_DIR, library_path) for library_path in searchAndLibraryPaths.library_paths] + sys.path
+
+        for search_path, recurse in searchAndLibraryPaths.search_paths:
+            if recurse:
+                paths = walk(os.path.join(BASE_DIR, search_path), flt)
+            else:
+                paths = [os.path.join(BASE_DIR, search_path, name) for name in os.listdir(os.path.join(BASE_DIR, search_path)) if not flt(name)]
+            for path in paths:
+                runner = Run([path], exit=False)
+                if result == 0:
+                    result = runner.linter.msg_status
+
+        sys.path = sys.path[len(searchAndLibraryPaths.library_paths):]
+
+    return result
 
 
 @subcmd(cmd="test", help='Check that all files have the appropriate license header',
