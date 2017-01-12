@@ -41,7 +41,7 @@ from collections import namedtuple
 
 from .xunittest import discover_tests, TestSuite, SimpleTestNameResult, testcase_matches, testsuite_list
 from .release import _LicenseOpener
-from .utils import get_executable_extension, BASE_DIR, find_path, base_to_top_paths, walk
+from .utils import get_executable_extension, BASE_DIR, find_path, base_to_top_paths, walk, base_path
 from .cmdline import subcmd, Arg
 
 
@@ -251,15 +251,16 @@ def style(args):
     for searchAndLibraryPaths in pylint_paths:
         sys.path = [os.path.join(BASE_DIR, library_path) for library_path in searchAndLibraryPaths.library_paths] + sys.path
 
-        for search_path, recurse in searchAndLibraryPaths.search_paths:
-            if recurse:
-                paths = walk(os.path.join(BASE_DIR, search_path), flt)
-            else:
-                paths = [os.path.join(BASE_DIR, search_path, name) for name in os.listdir(os.path.join(BASE_DIR, search_path)) if not flt(name)]
-            for path in paths:
-                runner = Run([path], exit=False)
-                if result == 0:
-                    result = runner.linter.msg_status
+        for rel_search_path, recurse in searchAndLibraryPaths.search_paths:
+            for abs_search_path in base_to_top_paths(args.topdir, rel_search_path):
+                if recurse:
+                    paths = walk(abs_search_path, flt)
+                else:
+                    paths = [os.path.join(abs_search_path, name) for name in os.listdir(abs_search_path) if not flt(name)]
+                for path in paths:
+                    runner = Run(['--rcfile=' + base_path('.pylintrc'), path], exit=False)
+                    if result == 0:
+                        result = runner.linter.msg_status
 
         sys.path = sys.path[len(searchAndLibraryPaths.library_paths):]
 
