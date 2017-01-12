@@ -249,7 +249,7 @@ def style(args):
                     )
 
     for searchAndLibraryPaths in pylint_paths:
-        sys.path = [os.path.join(BASE_DIR, library_path) for library_path in searchAndLibraryPaths.library_paths] + sys.path
+        sys.path = [base_path(library_path) for library_path in searchAndLibraryPaths.library_paths] + sys.path
 
         for rel_search_path, recurse in searchAndLibraryPaths.search_paths:
             for abs_search_path in base_to_top_paths(args.topdir, rel_search_path):
