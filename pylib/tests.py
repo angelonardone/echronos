@@ -237,8 +237,15 @@ def style(args):
 
     SearchAndLibraryPaths = namedtuple('SearchAndLibraryPaths', ('search_paths', 'library_paths'))
 
-    pylint_paths = (SearchAndLibraryPaths((('', False), ('pylib', True), ('rtos', True)), tuple()),
-                    SearchAndLibraryPaths((('components', True), ('packages', True), (os.path.join('prj', 'app'), True)), (os.path.join('prj', 'app'), os.path.join('prj', 'app', 'lib'), os.path.join('prj', 'app', 'ply'))),
+    pylint_paths = (SearchAndLibraryPaths((('', False),
+                                           ('pylib', True),
+                                           ('rtos', True)),
+                                            tuple()),
+                    SearchAndLibraryPaths((('components', True), ('packages', True),
+                                           (os.path.join('prj', 'app'), True)),
+                                          (os.path.join('prj', 'app'),
+                                           os.path.join('prj', 'app', 'lib'),
+                                           os.path.join('prj', 'app', 'ply'))),
                     )
 
     for searchAndLibraryPaths in pylint_paths:
@@ -255,6 +262,17 @@ def style(args):
 
 
 def run_pylint_on_repo_dir(repo_dir, recurse, excludes):
+    result = 0
+
+    for abs_dir in base_to_top_paths(get_top_dir(), repo_dir):
+        pylint_result = run_pylint_on_abs_dir(abs_dir, recurse, excludes)
+        if result == 0:
+            result = pylint_result
+
+    return result
+
+
+def run_pylint_on_abs_dir(abs_dir, recurse, excludes):
     # Import pylint here instead of the top of the file so that the rest of the x.py functionality can be used without
     # having to install pylint.
     from pylint.lint import Run
@@ -264,15 +282,14 @@ def run_pylint_on_repo_dir(repo_dir, recurse, excludes):
     def shall_pylint_ignore_path(path):
         return os.path.splitext(path)[1] != '.py' or any([True for exclude in excludes if exclude in path])
 
-    for abs_dir in base_to_top_paths(get_top_dir(), repo_dir):
-        if recurse:
-            paths = walk(abs_dir, shall_pylint_ignore_path)
-        else:
-            paths = [os.path.join(abs_dir, name) for name in os.listdir(abs_dir) if not shall_pylint_ignore_path(name)]
-        for path in paths:
-            runner = Run(['--rcfile=' + base_path('.pylintrc'), path], exit=False)
-            if result == 0:
-                result = runner.linter.msg_status
+    if recurse:
+        paths = walk(abs_dir, shall_pylint_ignore_path)
+    else:
+        paths = [os.path.join(abs_dir, name) for name in os.listdir(abs_dir) if not shall_pylint_ignore_path(name)]
+    for path in paths:
+        runner = Run(['--rcfile=' + base_path('.pylintrc'), path], exit=False)
+        if result == 0:
+            result = runner.linter.msg_status
 
     return result
 
