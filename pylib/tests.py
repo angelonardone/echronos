@@ -41,7 +41,7 @@ from collections import namedtuple
 
 from .xunittest import discover_tests, TestSuite, SimpleTestNameResult, testcase_matches, testsuite_list
 from .release import _LicenseOpener
-from .utils import get_executable_extension, BASE_DIR, find_path, base_to_top_paths, walk, base_path
+from .utils import get_executable_extension, BASE_DIR, find_path, base_to_top_paths, walk, base_path, get_top_dir
 from .cmdline import subcmd, Arg
 
 
@@ -235,13 +235,6 @@ def style(args):
         logging.error('Python code-style check found non-compliant files')  # details on stdout
         result = 1
 
-    # Import pylint here instead of the top of the file so that the rest of the x.py functionality can be used without
-    # having to install pylint.
-    from pylint.lint import Run
-
-    def flt(path):
-        return os.path.splitext(path)[1] != '.py' or any([True for exclude in excludes if exclude in path])
-
     SearchAndLibraryPaths = namedtuple('SearchAndLibraryPaths', ('search_paths', 'library_paths'))
 
     pylint_paths = (SearchAndLibraryPaths((('', False), ('pylib', True), ('rtos', True)), tuple()),
@@ -251,18 +244,35 @@ def style(args):
     for searchAndLibraryPaths in pylint_paths:
         sys.path = [base_path(library_path) for library_path in searchAndLibraryPaths.library_paths] + sys.path
 
-        for rel_search_path, recurse in searchAndLibraryPaths.search_paths:
-            for abs_search_path in base_to_top_paths(args.topdir, rel_search_path):
-                if recurse:
-                    paths = walk(abs_search_path, flt)
-                else:
-                    paths = [os.path.join(abs_search_path, name) for name in os.listdir(abs_search_path) if not flt(name)]
-                for path in paths:
-                    runner = Run(['--rcfile=' + base_path('.pylintrc'), path], exit=False)
-                    if result == 0:
-                        result = runner.linter.msg_status
+        for repo_dir, recurse in searchAndLibraryPaths.search_paths:
+            pylint_result = run_pylint_on_repo_dir(repo_dir, recurse, excludes)
+            if result == 0:
+                result = pylint_result
 
         sys.path = sys.path[len(searchAndLibraryPaths.library_paths):]
+
+    return result
+
+
+def run_pylint_on_repo_dir(repo_dir, recurse, excludes):
+    # Import pylint here instead of the top of the file so that the rest of the x.py functionality can be used without
+    # having to install pylint.
+    from pylint.lint import Run
+
+    result = 0
+
+    def shall_pylint_ignore_path(path):
+        return os.path.splitext(path)[1] != '.py' or any([True for exclude in excludes if exclude in path])
+
+    for abs_dir in base_to_top_paths(get_top_dir(), repo_dir):
+        if recurse:
+            paths = walk(abs_dir, shall_pylint_ignore_path)
+        else:
+            paths = [os.path.join(abs_dir, name) for name in os.listdir(abs_dir) if not shall_pylint_ignore_path(name)]
+        for path in paths:
+            runner = Run(['--rcfile=' + base_path('.pylintrc'), path], exit=False)
+            if result == 0:
+                result = runner.linter.msg_status
 
     return result
 
