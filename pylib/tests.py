@@ -207,7 +207,7 @@ class _TeamcityReport(pycodestyle.StandardReport):
         args=(Arg('--teamcity', action='store_true', help="Provide teamcity output for tests", default=False),
               Arg('--excludes', nargs='*', help="Exclude directories from code-style checks", default=[])))
 def style(args):
-    """Check for PEP8 compliance with the pycodestyle tool.
+    """Check for PEP8 compliance with the pycodestyle tool and for common coding style conventions via pylint.
 
     This implements conventions lupHw1 and u1wSS9.
     The enforced maximum line length follows convention TZb0Uv.
@@ -235,28 +235,38 @@ def style(args):
         logging.error('Python code-style check found non-compliant files')  # details on stdout
         result = 1
 
-    SearchAndLibraryPaths = namedtuple('SearchAndLibraryPaths', ('search_paths', 'library_paths'))
+    pylint_result = run_pylint(excludes)
+    if result == 0:
+        result = pylint_result
 
-    pylint_paths = (SearchAndLibraryPaths((('', False),
-                                           ('pylib', True),
-                                           ('rtos', True)),
-                                            tuple()),
-                    SearchAndLibraryPaths((('components', True), ('packages', True),
-                                           (os.path.join('prj', 'app'), True)),
-                                          (os.path.join('prj', 'app'),
-                                           os.path.join('prj', 'app', 'lib'),
-                                           os.path.join('prj', 'app', 'ply'))),
-                    )
+    return result
 
-    for searchAndLibraryPaths in pylint_paths:
-        sys.path = [base_path(library_path) for library_path in searchAndLibraryPaths.library_paths] + sys.path
 
-        for repo_dir, recurse in searchAndLibraryPaths.search_paths:
+def run_pylint(excludes):
+    result = 0
+
+    PylintRun = namedtuple('PylintRun', ('search_paths', 'library_paths'))
+
+    pylint_runs = (PylintRun((('', False),
+                              ('pylib', True),
+                              ('rtos', True)),
+                             tuple()),
+                   PylintRun((('components', True),
+                              ('packages', True),
+                              (os.path.join('prj', 'app'), True)),
+                             (os.path.join('prj', 'app'),
+                              os.path.join('prj', 'app', 'lib'),
+                              os.path.join('prj', 'app', 'ply'))))
+
+    for pylint_run in pylint_runs:
+        sys.path = [base_path(library_path) for library_path in pylint_run.library_paths] + sys.path
+
+        for repo_dir, recurse in pylint_run.search_paths:
             pylint_result = run_pylint_on_repo_dir(repo_dir, recurse, excludes)
             if result == 0:
                 result = pylint_result
 
-        sys.path = sys.path[len(searchAndLibraryPaths.library_paths):]
+        sys.path = sys.path[len(pylint_run.library_paths):]
 
     return result
 
