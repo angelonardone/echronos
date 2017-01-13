@@ -189,7 +189,8 @@ class Task:
             if not os.path.exists(review_path):
                 break
         else:
-            raise FileNotFoundError('Unable to determine review round for task "{}" and reviewer "{}" ("{}")'.format(self.name, reviewer, review_path_template))
+            raise FileNotFoundError('Unable to determine review round for task "{}" and reviewer "{}" ("{}")'
+                                    .format(self.name, reviewer, review_path_template))
 
         if not accept:
             review_template = """Reviewer: {} ({})
@@ -278,7 +279,8 @@ This is necessary for our review system to work as expected.')
 
     def _is_on_review(self):
         if self._git.get_active_branch() != self.name:
-            raise _TaskNotActiveBranchError('The task {} is not the active git branch (the active git branch is {})'.format(self.name, self._git.get_active_branch()))
+            raise _TaskNotActiveBranchError('The task {} is not the active git branch (the active git branch is {})'
+                                            .format(self.name, self._git.get_active_branch()))
         return os.path.exists(self._review_dir)
 
     @staticmethod
