@@ -38,6 +38,7 @@ import re
 import nose
 import inspect
 from collections import namedtuple
+import multiprocessing
 
 from .xunittest import discover_tests, TestSuite, SimpleTestNameResult, testcase_matches, testsuite_list
 from .release import _LicenseOpener
@@ -235,73 +236,78 @@ def style(args):
         logging.error('Python code-style check found non-compliant files')  # details on stdout
         result = 1
 
-    pylint_result = run_pylint(excludes)
+    pylint_result = _run_pylint(excludes)
     if result == 0:
         result = pylint_result
 
     return result
 
 
-def run_pylint(excludes):
+def _run_pylint(excludes):
     result = 0
 
     PylintRun = namedtuple('PylintRun', ('search_paths', 'library_paths'))
 
-    pylint_runs = (PylintRun((('', False),
-                              ('pylib', True),
-                              ('rtos', True)),
-                             tuple()),
-                   PylintRun((('components', True),
-                              ('packages', True),
-                              (os.path.join('prj', 'app'), True)),
-                             (os.path.join('prj', 'app'),
-                              os.path.join('prj', 'app', 'lib'),
-                              os.path.join('prj', 'app', 'ply'))))
+    pylint_runs = (PylintRun(search_paths=(('', False),
+                                           ('pylib', True),
+                                           ('rtos', True)),
+                             library_paths=tuple()),
+                   PylintRun(search_paths=(('components', True),
+                                           ('packages', True),
+                                           (os.path.join('prj', 'app'), True)),
+                             library_paths=(os.path.join('prj', 'app'),
+                                            os.path.join('prj', 'app', 'lib'),
+                                            os.path.join('prj', 'app', 'ply'))))
 
     for pylint_run in pylint_runs:
-        sys.path = [base_path(library_path) for library_path in pylint_run.library_paths] + sys.path
-
-        for repo_dir, recurse in pylint_run.search_paths:
-            pylint_result = run_pylint_on_repo_dir(repo_dir, recurse, excludes)
-            if result == 0:
-                result = pylint_result
-
-        sys.path = sys.path[len(pylint_run.library_paths):]
-
-    return result
-
-
-def run_pylint_on_repo_dir(repo_dir, recurse, excludes):
-    result = 0
-
-    for abs_dir in base_to_top_paths(get_top_dir(), repo_dir):
-        pylint_result = run_pylint_on_abs_dir(abs_dir, recurse, excludes)
+        file_paths = _discover_pylint_file_paths(pylint_run.search_paths, excludes)
+        library_paths = [base_path(library_path) for library_path in pylint_run.library_paths]
+        pylint_result = _run_pylint_on_paths(file_paths, library_paths)
         if result == 0:
             result = pylint_result
 
     return result
 
 
-def run_pylint_on_abs_dir(abs_dir, recurse, excludes):
+def _discover_pylint_file_paths(search_paths, excludes):
+    def shall_pylint_ignore_path(path):
+        return os.path.splitext(path)[1] != '.py' or any([True for exclude in excludes if exclude in path])
+
+    for repo_dir, recurse in search_paths:
+        for abs_dir in base_to_top_paths(get_top_dir(), repo_dir):
+            if recurse:
+                yield from walk(abs_dir, shall_pylint_ignore_path)
+            else:
+                for name in os.listdir(abs_dir):
+                    if not shall_pylint_ignore_path(name):
+                        yield os.path.join(abs_dir, name)
+
+
+def _run_pylint_on_paths(file_paths, library_paths):
     # Import pylint here instead of the top of the file so that the rest of the x.py functionality can be used without
     # having to install pylint.
     from pylint.lint import Run
 
-    result = 0
+    if not isinstance(file_paths, list):
+        file_paths = list(file_paths)
 
-    def shall_pylint_ignore_path(path):
-        return os.path.splitext(path)[1] != '.py' or any([True for exclude in excludes if exclude in path])
+    with _python_path(*library_paths):
+        runner = Run(['--rcfile=' + base_path('.pylintrc'), '-j', str(_get_number_of_cpus())] + file_paths,
+                     exit=False)
 
-    if recurse:
-        paths = walk(abs_dir, shall_pylint_ignore_path)
+    return runner.linter.msg_status
+
+
+def _get_number_of_cpus():
+    if hasattr(os, 'sched_getaffinity'):
+        # pylint: disable=no-member
+        cpu_count = len(os.sched_getaffinity(0))
     else:
-        paths = [os.path.join(abs_dir, name) for name in os.listdir(abs_dir) if not shall_pylint_ignore_path(name)]
-    for path in paths:
-        runner = Run(['--rcfile=' + base_path('.pylintrc'), path], exit=False)
-        if result == 0:
-            result = runner.linter.msg_status
-
-    return result
+        try:
+            cpu_count = multiprocessing.cpu_count()
+        except NotImplementedError:
+            cpu_count = 1
+    return cpu_count
 
 
 @subcmd(cmd="test", help='Check that all files have the appropriate license header',
