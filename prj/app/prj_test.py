@@ -154,7 +154,7 @@ def test_schema_default_none():
         'type': 'dict',
         'name': 'foo',
         'dict_type': ([{'type': 'string',
-                       'name': 'foo'}], [])
+                        'name': 'foo'}], [])
     }
     with assert_raises(SystemParseError):
         xml2dict(xml_parse_string(test_xml), schema)
@@ -165,8 +165,8 @@ def test_schema_default_value():
         'type': 'dict',
         'name': 'foo',
         'dict_type': ([{'type': 'string',
-                       'name': 'bar',
-                       'default': 'FOO'}], [])
+                        'name': 'bar',
+                        'default': 'FOO'}], [])
     }
     assert xml2dict(xml_parse_string("<foo></foo>"), schema) == {'bar': 'FOO'}
     assert xml2dict(xml_parse_string("<foo><bar>BAZ</bar></foo>"), schema) == {'bar': 'BAZ'}

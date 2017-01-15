@@ -712,7 +712,7 @@ def xml2dict(el, schema=None):
         else:
             raise SystemParseError(
                 xml_error_str(el, "The element type '{}' is not among the supported types: {}"
-                .format(_type, compound_types + base_types)))
+                              .format(_type, compound_types + base_types)))
 
     def get_el_val_from_compound_type(el, _type, schema, parent):
         result = None

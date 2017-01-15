@@ -34,7 +34,7 @@ from .utils import Git, string_to_path, walk
 
 
 TaskConfiguration = namedtuple('TaskConfiguration', ('repo_path', 'tasks_path', 'description_template_path',
-                               'reviews_path', 'mainline_branch'))
+                                                     'reviews_path', 'mainline_branch'))
 
 
 class Task:
@@ -232,8 +232,8 @@ There already are reviews with very similar prefixes:\n\
     {}.\n\
 Might you have used any of those in the past? (Y/n)'.format(name_as_path, close_matches))
                 if not answer or answer.lower() == 'y':
-                    raise _InconsistentUserNameError(
-'It seems that you wrote previous reviews under a different git user name. \
+                    raise _InconsistentUserNameError('\
+It seems that you wrote previous reviews under a different git user name. \
 To keep things consistent, please use "git config --global user.name" to update your git user name. \
 Your git user name should be consistent across all your repositories and match that of previous reviews. \
 This is necessary for our review system to work as expected.')
