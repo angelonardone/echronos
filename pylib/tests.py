@@ -228,10 +228,10 @@ def style(args):
 
     logging.info('code-style check: ' + ' '.join(options))
 
-    style = pycodestyle.StyleGuide(arglist=options)
+    codestyle = pycodestyle.StyleGuide(arglist=options)
     if args.teamcity:
-        style.init_report(_TeamcityReport)
-    report = style.check_files()
+        codestyle.init_report(_TeamcityReport)
+    report = codestyle.check_files()
     if report.total_errors:
         logging.error('Python code-style check found non-compliant files')  # details on stdout
         result = 1
