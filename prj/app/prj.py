@@ -959,7 +959,7 @@ class Project:
         if output_el:
             path = get_attribute(output_el, 'path')
         else:
-            path = 'out'
+            path = 'out'  # pylint: disable=redefined-variable-type
         if os.path.isabs(path):
             self.output = path
         else:

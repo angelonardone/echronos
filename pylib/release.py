@@ -389,7 +389,7 @@ def _tar_gz_with_license(output, dir_path, file_paths, prefix, lic, doc_license,
                         f = os.path.relpath(f, dir_path)
                     tf.add(f, arcname='{}/{}'.format(prefix, f), filter=lo.tar_info_filter)
     finally:
-        tarfile.bltn_open = open
+        tarfile.bltn_open = open  # pylint: disable=redefined-variable-type
 
 
 def _mk_partial(pkg, topdir, allow_unknown_filetypes):
@@ -454,6 +454,7 @@ def build_single_release(config, topdir):
         for arcname, filename in config.extra_files:
             file_path = find_path(filename, topdir)
             lo = _LicenseOpener(dummy_pkg.get_license(), dummy_pkg.get_doc_license(), topdir, filename=file_path)
+            # pylint: disable=redefined-variable-type
             tarfile.bltn_open = lo.open
             tf.add(file_path, arcname='{}/{}'.format(basename, arcname), filter=lo.tar_info_filter)
             tarfile.bltn_open = open
