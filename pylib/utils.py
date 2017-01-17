@@ -1,4 +1,4 @@
-#
+    #
 # eChronos Real-Time Operating System
 # Copyright (C) 2015  National ICT Australia Limited (NICTA), ABN 62 102 206 173.
 #
@@ -242,6 +242,7 @@ def get_executable_extension():
     return _EXECUTABLE_EXTENSION
 
 
+# pylint: disable=too-many-public-methods
 class Git:
     """
     Represents common state applicable to a series of git invocations and provides a pythonic interface to git.
