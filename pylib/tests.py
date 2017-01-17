@@ -206,7 +206,8 @@ class _TeamcityReport(pycodestyle.StandardReport):
 
 @subcmd(cmd="test", help='Run code-style checks against project Python files',
         args=(Arg('--teamcity', action='store_true', help="Provide teamcity output for tests", default=False),
-              Arg('--excludes', nargs='*', help="Exclude directories from code-style checks", default=[])))
+              Arg('--excludes', nargs='*', help="Exclude directories from code-style checks", default=[]),
+              Arg('--print-paths', action='store_true', help="Print the paths of files with pylint issues")))
 def style(args):
     """Check for PEP8 compliance with the pycodestyle tool and for common coding style conventions via pylint.
 
@@ -236,14 +237,14 @@ def style(args):
         logging.error('Python code-style check found non-compliant files')  # details on stdout
         result = 1
 
-    pylint_result = _run_pylint(excludes)
+    pylint_result = _run_pylint(excludes, args.print_paths)
     if result == 0:
         result = pylint_result
 
     return result
 
 
-def _run_pylint(excludes):
+def _run_pylint(excludes, print_file_paths=False):
     result = 0
 
     PylintRun = namedtuple('PylintRun', ('search_paths', 'library_paths'))
@@ -262,7 +263,7 @@ def _run_pylint(excludes):
     for pylint_run in pylint_runs:
         file_paths = _discover_pylint_file_paths(pylint_run.search_paths, excludes)
         library_paths = [base_path(library_path) for library_path in pylint_run.library_paths]
-        pylint_result = _run_pylint_on_paths(file_paths, library_paths)
+        pylint_result = _run_pylint_with_library_paths(file_paths, library_paths, print_file_paths)
         if result == 0:
             result = pylint_result
 
@@ -283,7 +284,22 @@ def _discover_pylint_file_paths(search_paths, excludes):
                         yield os.path.join(abs_dir, name)
 
 
-def _run_pylint_on_paths(file_paths, library_paths):
+def _run_pylint_with_library_paths(file_paths, library_paths, print_file_paths=False):
+    result = 0
+
+    with _python_path(*library_paths):
+        if print_file_paths:
+            for file_path in file_paths:
+                file_result = _run_pylint_on_paths((file_path,))
+                if result == 0:
+                    result = file_result
+        else:
+            result = _run_pylint_on_paths(file_paths)
+
+    return result
+
+
+def _run_pylint_on_paths(file_paths):
     # Import pylint here instead of the top of the file so that the rest of the x.py functionality can be used without
     # having to install pylint.
     from pylint.lint import Run
@@ -291,9 +307,10 @@ def _run_pylint_on_paths(file_paths, library_paths):
     if not isinstance(file_paths, list):
         file_paths = list(file_paths)
 
-    with _python_path(*library_paths):
-        runner = Run(['--rcfile=' + base_path('.pylintrc'), '-j', str(_get_number_of_cpus())] + file_paths,
-                     exit=False)
+    runner = Run(['--rcfile=' + base_path('.pylintrc'), '-j', str(_get_number_of_cpus())] + file_paths,
+                 exit=False)
+    if len(file_paths) == 1 and runner.linter.msg_status != 0:
+        print(os.path.relpath(file_paths[0], get_top_dir()) + "\n")
 
     return runner.linter.msg_status
 
