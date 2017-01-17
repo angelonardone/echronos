@@ -412,6 +412,7 @@ def build_partials(args):
     return 0
 
 
+# pylint: disable=too-many-locals
 def build_single_release(config, topdir):
     """Build a release archive for a specific release configuration."""
     # for an unknown reason, tarfile.bltn_open is not reliably reset to the open() function in the extra files loop
@@ -471,6 +472,7 @@ def build_single_release(config, topdir):
         _tar_add_data(tarfile_obj, '{}/build_info'.format(basename), build_info.encode('utf8'), _tar_info_filter)
 
 
+# pylint: disable=too-many-locals
 def release_test_one(archive):
     """Test a single archive
 
