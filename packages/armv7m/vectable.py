@@ -87,7 +87,7 @@ class EntryModule(Module):
         config['external_irqs'] = xirqs
 
         # flash_load_addr defaults to flash_addr if we don't set it
-        if config['flash_load_addr'] == None:
+        if config['flash_load_addr'] is None:
             config['flash_load_addr'] = config['flash_addr']
 
         return config
