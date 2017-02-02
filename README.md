@@ -28,7 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Yes, We Are Open for Business
 
-If you have any questions, send us an e-mail to echronos@trustworthy.systems or tweet at us @echronosrtos.
+If you have any questions, send us an e-mail to echronos@trustworthy.systems or tweet at us [@echronosrtos](https://twitter.com/echronosrtos).
 
 If there is something in the project that you think is worth improving, please create a [github issue](https://github.com/echronos/echronos/issues).
 
@@ -44,102 +44,94 @@ To this end, the RTOS code base is designed to be highly modular and configurabl
 
 Available implementations currently target ARM Cortex-M4, and (as of writing, only QEMU-emulated) PowerPC e500.
 
-To obtain the source code, use the following commands:
-
-    git clone https://github.com/echronos/echronos.git
-    cd echronos
-
 
 # Quick-start
 
-See the Prerequisites section for instructions on downloading and installing all prerequisites.
-The following assumes they have been set up.
+## Download
 
-Build and run an example system for the RTOS variant *Rigel* on QEMU-emulated ARMv7-M:
+Download the [latest _posix_ release](https://github.com/echronos/echronos/releases) and unpack it in a directory of your choice.
 
-    prj/app/prj.py build machine-qemu-simple.example.rigel-system
+The project makes frequent releases, based on improvements flowing into the master branch of the git repository.
+For each version, there are different release archives for different target platforms.
+The _posix_ release is aimed at running on top of any POSIX host operating system, such as Linux or Windows (with Cygwin or MinGW).
 
-    # Run the generated system in qemu (press `ctrl-c` to close QEMU after it is finished)
-    qemu-system-arm -M simple-armv7m -S -s -nographic -semihosting -kernel out/machine-qemu-simple/example/rigel-system/system
+## Tools
 
-    # To connect and view debug output run gdb in another shell prompt
-    # Note: The Rigel example will end by deliberately triggering a fatal error
-    arm-none-eabi-gdb -ex "target remote :1234" -ex "b fatal" out/machine-qemu-simple/example/rigel-system/system
-    (gdb) c
-    ...
-    task a: start delay
-    irq tick
-    irq tick
-    irq tick
-    irq tick
-    task a: complete delay
+You need the following tools:
 
-    Breakpoint 1, fatal (error_id=error_id@entry=1 '\001')
-    (gdb) quit
+- Python 3
+- GCC compiler + GNU binutils
 
-Build and run an example system for the RTOS variant *Kochab* on QEMU-emulated PowerPC e500:
+On Linux, use your package manager to install these tools.
+On Windows, obtain and install Python 3 from [python.org](https://www.python.org) and install either [Cygwin](https://cygwin.com) or [MinGW](http://mingw.org) including the GCC compiler.
 
-    prj/app/prj.py build machine-qemu-ppce500.example.kochab-system
+## Build
 
-    # Run the generated system in qemu (press `ctrl-a` then 'x' to close QEMU after you are finished)
-    qemu-system-ppc -M ppce500 -S -s -nographic -kernel out/machine-qemu-ppce500/example/kochab-system/system
+The following commands build a simple version of the eChronos RTOS together with a small example application:
 
-    # To connect and view debug output run gdb in another shell prompt
-    # Note: The Kochab example will end with task b cycling forever between "blocked" and "unblocked"
+    cd eChronos-posix-VERSION
+    ./prj/prj.sh build posix.acamar
 
-    powerpc-linux-gdb -ex "target remote :1234" -ex "b debug_print" out/machine-qemu-ppce500/example/kochab-system/system
-    (gdb) c
-    ...
-    Breakpoint 1, debug_print (msg=0x33b4 "tick")
-    (gdb) c
-    Breakpoint 1, debug_print (msg=0x33e8 "task b blocking")
-    (gdb) c
-    Breakpoint 1, debug_print (msg=0x33b4 "tick")
-    (gdb) c
-    Breakpoint 1, debug_print (msg=0x33f8 "task b unblocked")
-    (gdb) quit
+On Windows, run `prj\prj` instead of `./prj/prj.sh`.
 
+This produces the binary `out/posix/acamar/system`(`.exe` on Windows).
 
-# Prerequisites
+## Run
 
-The following tools are supplied with this repository in the [`tools`](tools) directory:
+Run the sample system with the command `./out/posix/acamar/system`.
+It prints `task a` and `task b` to the screen until you stop it by pressing `ctrl-c`.
 
-* Python 3 for the Python scripts in the repository
-* The `arm-none-eabi` GNU toolchain and `arm-none-eabi-gdb` for building and debugging the RTOS for ARMv7-M
+If you have GDB installed, you can also run this RTOS system under the debugger.
+Start GDB with `gdb out/posix/acamar/system` and
 
-To obtain and build `qemu-system-arm` with target `simple-armv7m` for testing the [`machine-qemu-simple`](packages/machine-qemu-simple) systems, run:
+- set a break point with `b debug_print`
+- start the system with `run`
+- gdb now stops the system just before it prints `task a` or `task b`, allowing you to inspect the system state or to continue with `continue`
 
-    git clone https://github.com/BreakawayConsulting/QEMU.git
-    cd QEMU
-    ./configure --target-list=arm-softmmu --disable-cocoa --disable-curses --disable-vnc --disable-tools --without-pixman --disable-console --disable-default-devices --disable-slirp --disable-curl --disable-guest-base --disable-guest-agent --disable-blobs --audio-drv-list= --audio-card-list= --disable-usb --disable-ide --disable-pie --enable-debug --disable-sdl --disable-fdt --disable-spice --disable-xen --disable-werror
-    make
-    export PATH=`pwd`/arm-softmmu:$PATH
+## Under the Hood
 
-To obtain the `powerpc-linux-gnu` GNU toolchain for building the RTOS for PowerPC e500 on Ubuntu Linux systems, run:
+### The `prj` Tool
 
-    sudo apt-get install gcc-powerpc-linux-gnu
+To give you an idea of what goes on when building an running an RTOS system as above, here is a quick overview of what happens under the hood.
 
-To obtain the `qemu-system-ppc` emulator for running the [`machine-qemu-ppce500`](packages/machine-qemu-ppce500) systems on Ubuntu Linux systems, run:
+The `prj` tool is the build tool of the RTOS.
+Its primary purpose is to
+- retrieve the system configuration,
+- generate RTOS code specifically for the system configuration,
+- and build the RTOS and application code into a single system binary.
 
-    sudo apt-get install qemu-system-ppc
+The command `./prj/prj.sh build posix.acamar` makes `prj` first search for a system configuration file with a `.prx` file name extension.
+Think of PRX files as make files.
+`prj` finds that system configuration file at [`share/packages/posix/acamar.prx`](packages/posix/acamar.prx), based on the search paths set up in [`project.prj`](prj/release_files/project.prj).
 
-To obtain, build, and install `powerpc-linux-gdb` for debugging PowerPC e500 systems, run:
+`acamar.prx` lists all the files that go into building this system plus some configuration information.
+For example, this system is configured with two tasks, _a_ and _b_, that have given entry point functions and stack sizes.
 
-    wget https://ftp.gnu.org/gnu/gdb/gdb-7.12.tar.xz
-    tar xaf gdb-7.12.tar.xz
-    cd gdb-7.12
-    ./configure --target=powerpc-linux --prefix=/usr/
-    make -s
-    sudo make -s install
+In the second step, `prj` uses this configuration information to generate a custom copy of the RTOS source code.
+This makes the RTOS itself as small as possible to leave more resources for the application.
 
-To obtain `pandoc` and `wkhtmltopdf` needed for building user documentation on Ubuntu Linux systems:
+The third step is to invoke the compiler and linker to build all the source code files listed in the system configuration into a binary.
 
-    sudo apt-get install pandoc
-    sudo apt-get install wkhtmltopdf
+### The Sample Application
+
+The file [`share/packages/rtos-example/acamar-test.c`](packages/rtos-example/acamar-test.c) contains the main application code of the example system (the PRX file refers to it as `rtos-example.acamar-test`).
+This file implements two tasks that perpetually print their name and yield to each other.
+
+You will notice that this file also contains the standard `main()` function found in all C programs.
+If necessary, it could, for example, initialize some hardware before starting the RTOS, which in turn starts the two tasks.
+
+### What is _Acamar_?
+
+The eChronos project is not a single RTOS, but provides a family of RTOS variants with different feature sets.
+Acamar is the name of the smallest one, but the POSIX release comes with a number of other, more powerful variants.
+They provide "proper" RTOS features, such as mutexes, interrupts, and timers.
+The [Variants and Components](#variants-and-components) section has more information on this topic.
+
 
 # Documentation
 
-Basic RTOS concepts and usage are documented in this README.
+The rest of this README covers all basic RTOS concepts and how to make use of them.
+It refers to the full [source code repository](https://github.com/echronos/echronos/), not just a release as the [Quick-start Guide](#quick-start) did above.
 
 More detailed documentation for the `x.py` tool can be found inside [`x.py`](x.py) itself.
 More detailed documentation for the `prj` tool can be found in [`prj/manual/prj-user-manual`](prj/manual/prj-user-manual).
@@ -367,25 +359,3 @@ Each product release contains:
 * a pre-built `prj` binary for the host platform targeted by the release
 
 Note that any user manuals available for each RTOS variant in the release can be found at `share/packages/<platform>/rtos-<variant>/documentation.*` in HTML, Markdown and PDF.
-
-
-## Using a product release
-
-After unpacking the product release, create a `project.prj` file for your software project in order to be able to use the `prj` tool that comes packaged with the release.
-
-A minimal `project.prj` contains, at the very least, a `search-path` entry to give `prj` a hint as to where to find modules.
-Here is a example that points to its relative location from the root of the release:
-
-    <?xml version="1.0" encoding="UTF-8" ?>
-    <project>
-        <search-path>share/packages</search-path>
-    </project>
-
-After this, the `prj` binary packaged with the release can be used in the same way as in the RTOS repository.
-Additional application code can be placed in other directories as long as they are included as search paths in the project.prj file.
-
-For example, to build the Kochab timer demo system provided with the PowerPC e500 release of the RTOS for Linux, run:
-
-    x86_64-unknown-linux-gnu/bin/prj build machine-qemu-ppce500.example.kochab-timer-demo
-
-Note that the PATH environment variable needs to be set up manually so that it includes the tools invoked by `prj`.
