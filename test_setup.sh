@@ -56,6 +56,14 @@ sudo apt-get -qq update
 sudo apt-get -qq install -y python3 splint gcc gdb gcc-powerpc-linux-gnu qemu-system-ppc texinfo xvfb pandoc wkhtmltopdf
 which python${PY_VER} || sudo apt-get install -y python${PY_VER}
 
+# Install pylint Python package to be able to run "x.py test style"
+# On Travis CI's Python 3.6, pylint causes Python to hang.
+# Therefore, do not install it on that configuration.
+if [ "${PY_VER}" != "3.6" ]
+then
+    python${PY_VER} -m pip install --user pylint
+fi
+
 # install GDB with PowerPC support from source; required by x.py test systems
 # unpack gdb tar ball to home directory to prevent tests below from discovering and failing on unrelated files
 if ! test -e "${HOME}/local/bin/powerpc-linux-gdb"

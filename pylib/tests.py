@@ -239,7 +239,12 @@ def style(args):
         logging.error('Python code-style check found non-compliant files')  # details on stdout
         result = 1
 
-    pylint_result = _run_pylint(excludes, args.print_paths)
+    try:
+        pylint_result = _run_pylint(excludes, args.print_paths)
+    except ImportError as err:
+        logging.warning('WARNING: Skipping pylint checks due to ImportError "%s". '
+                        'Most likely, the "pylint" Python package is not available.', err)
+        pylint_result = 0
     if result == 0:
         result = pylint_result
 
