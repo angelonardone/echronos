@@ -473,6 +473,8 @@ def build_single_release(config, topdir):
         build_info += '\n'
         _tar_add_data(tarfile_obj, '{}/build_info'.format(basename), build_info.encode('utf8'), _tar_info_filter)
 
+        _tar_add_data(tf, '{}/version_info'.format(basename), config.version.encode('utf8'), _tar_info_filter)
+
 
 # pylint: disable=too-many-locals
 # pylint: disable=too-many-branches
