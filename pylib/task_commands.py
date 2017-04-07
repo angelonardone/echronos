@@ -83,7 +83,7 @@ def accept(args):
 
 @cmd(help='Developers: integrate a completed task branch into the mainline branch {}.'
           .format(task_cfg.mainline_branch),
-     args=(_taskname_arg,))
+     args=(_offline_arg, _taskname_arg,))
 def integrate(args):
     task = Task(task_cfg, name=args.taskname)
-    task.integrate()
+    task.integrate(offline=args.offline)
