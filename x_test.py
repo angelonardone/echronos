@@ -25,7 +25,7 @@
 # @TAG(NICTA_AGPL)
 #
 
-from pylib.utils import Git, get_top_dir
+from pylib.utils import Git, get_top_dir, LineFilter, update_file
 from pylib.components import _sort_typedefs, _sort_by_dependencies, _DependencyNode, _UnresolvableDependencyError
 from pylib.tasks import _Review, _Task, _InvalidTaskStateError
 from nose.tools import assert_raises
@@ -141,3 +141,50 @@ def test_rework_not_accepted():
 def test_not_enough_accepted():
     # This task was integrated after being accepted by only one reviewer, before we placed a hard minimum in the check
     assert_raises(_InvalidTaskStateError, task_dummy_create("65N0RS-fix-x-test-regression")._check_is_accepted)
+
+
+def test_update_file():
+    # Ensure the following properties of update_file()
+    # - performs the expected line manipulation
+    # - leaves a file 100% unmodified when the line filters are set up to have no effect
+    # - leaves lines unaffected by line filters 100% unmodified
+    # - gracefully handles complex unicode characters
+    # - gracefully handles different line endings
+    line1 = u'line one: 繁\n'
+    line2 = u'line two: ℕ\n'
+
+    for newline in ('\n', '\r', '\r\n'):
+        tf_obj = tempfile.NamedTemporaryFile(delete=False)
+        tf_obj.write('{}{}'.format(line1.replace('\n', newline), line2.replace('\n', newline)).encode('utf8'))
+        tf_obj.close()
+        _test_update_file_on_path(tf_obj.name, line1, line2)
+        os.remove(tf_obj.name)
+
+
+def _test_update_file_on_path(file_path, line1, line2):
+    with open(file_path, 'rb') as file_obj:
+        original_file_contents = file_obj.read()
+
+    def matches(line_filter, line, line_no, path):
+        return line.startswith('line two')
+
+    def replaceNone(line_filter, line, line_no, path):
+        return line.replace('line two', 'line two')
+
+    def handle_no_matches(line_filter, path):
+        pass
+
+    update_file(file_path, [LineFilter(matches, replaceNone, handle_no_matches)])
+    with open(file_path, 'rb') as file_obj:
+        updated_file_contents = file_obj.read()
+    assert original_file_contents == updated_file_contents
+
+    def replaceNumber(line_filter, line, line_no, path):
+        return line.replace('line two', 'line 2')
+
+    update_file(file_path, [LineFilter(matches, replaceNumber, handle_no_matches)])
+    with open(file_path, 'r', encoding='utf8') as file_obj:
+        line = file_obj.readline()
+        assert line == line1
+        line = file_obj.readline()
+        assert line == line2.replace('line two', 'line 2')
