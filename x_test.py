@@ -25,8 +25,9 @@
 # @TAG(NICTA_AGPL)
 #
 
-from pylib.utils import Git, get_top_dir, LineFilter, update_file
+from pylib.utils import Git, get_top_dir, LineFilter, update_file, get_release_version
 from pylib.components import _sort_typedefs, _sort_by_dependencies, _DependencyNode, _UnresolvableDependencyError
+from pylib.release import get_release_configs
 from pylib.tasks import _Review, _Task, _InvalidTaskStateError
 from pylib.task import Task
 from pylib.task_commands import task_cfg
@@ -195,3 +196,9 @@ def _test_update_file_on_path(file_path, line1, line2):
 def test_get_release_impact():
     task = Task(task_cfg, 'manage_release_version_numbers', checkout=False)
     assert task._get_release_impact() == 'patch'
+
+
+def test_get_release_version():
+    imported_version_str = get_release_configs()[0].version
+    parsed_version_str = '.'.join(str(nmbr) for nmbr in get_release_version('release_cfg.py'))
+    assert parsed_version_str == imported_version_str
