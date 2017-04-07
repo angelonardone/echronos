@@ -28,6 +28,8 @@
 from pylib.utils import Git, get_top_dir, LineFilter, update_file
 from pylib.components import _sort_typedefs, _sort_by_dependencies, _DependencyNode, _UnresolvableDependencyError
 from pylib.tasks import _Review, _Task, _InvalidTaskStateError
+from pylib.task import Task
+from pylib.task_commands import task_cfg
 from nose.tools import assert_raises
 import itertools
 import os
@@ -188,3 +190,8 @@ def _test_update_file_on_path(file_path, line1, line2):
         assert line == line1
         line = file_obj.readline()
         assert line == line2.replace('line two', 'line 2')
+
+
+def test_get_release_impact():
+    task = Task(task_cfg, 'manage_release_version_numbers', checkout=False)
+    assert task._get_release_impact() == 'patch'
