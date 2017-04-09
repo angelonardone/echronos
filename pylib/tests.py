@@ -363,7 +363,8 @@ def systems(args):
         for packages_dir in base_to_top_paths(args.topdir, 'packages'):
             tests.extend(find_gdb_test_py_files(packages_dir))
 
-    if unittest.main(module=None, argv=[''] + args.unknown_args + tests).wasSuccessful():
+    result = unittest.main(module=None, argv=[''] + args.unknown_args + tests)
+    if result.testsRun > 0 and result.wasSuccessful():
         return 0
     else:
         return 1
