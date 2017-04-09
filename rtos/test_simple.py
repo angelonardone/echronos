@@ -29,11 +29,12 @@ import ctypes
 import os
 import random
 import sys
+import unittest
 
 from pylib.utils import get_executable_extension
 
 
-class testSimple:
+class TestSimple(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         r = os.system(sys.executable + " ./prj/app/prj.py build posix.unittest.simple")
