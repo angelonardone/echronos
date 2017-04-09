@@ -28,12 +28,13 @@
 import ctypes
 import os
 import sys
+import unittest
 
 from rtos import sched
 from pylib.utils import get_executable_extension
 
 
-class testRrSched:
+class TestRrSched(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         r = os.system(sys.executable + " ./prj/app/prj.py build posix.unittest.sched-rr")
@@ -53,7 +54,7 @@ class testRrSched:
             yield "check_state.{}".format(i), check_state, s
 
 
-class testPrioSched:
+class TestPrioSched(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         r = os.system(sys.executable + " ./prj/app/prj.py build posix.unittest.sched-prio")
@@ -73,7 +74,7 @@ class testPrioSched:
             yield "check_state.{}".format(i), check_state, s
 
 
-class testPrioInheritSched:
+class TestPrioInheritSched(unittest.TestCase):
     test_size = 5
 
     @classmethod

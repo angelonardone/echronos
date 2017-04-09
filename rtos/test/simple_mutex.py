@@ -28,12 +28,13 @@
 import ctypes
 import os
 import sys
+import unittest
 
 from rtos import sched
 from pylib.utils import get_executable_extension
 
 
-class testSimpleMutex:
+class TestSimpleMutex(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         r = os.system(sys.executable + " ./prj/app/prj.py build posix.unittest.simple-mutex")
