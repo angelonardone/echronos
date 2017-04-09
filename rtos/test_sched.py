@@ -50,8 +50,8 @@ class TestRrSched(unittest.TestCase):
             assert self.impl_sched == model
 
         states = sched.RrSchedModel.states(10, assume_runnable=True)
-        for i, s in enumerate(states):
-            yield "check_state.{}".format(i), check_state, s
+        for s in states:
+            check_state(s)
 
 
 class TestPrioSched(unittest.TestCase):
@@ -70,8 +70,8 @@ class TestPrioSched(unittest.TestCase):
             assert self.impl_sched == model
 
         states = sched.PrioSchedModel.states(10, assume_runnable=True)
-        for i, s in enumerate(states):
-            yield "check_state.{}".format(i), check_state, s
+        for s in states:
+            check_state(s)
 
 
 class TestPrioInheritSched(unittest.TestCase):
@@ -97,5 +97,5 @@ class TestPrioInheritSched(unittest.TestCase):
             assert self.impl_sched == model
 
         states = sched.PrioInheritSchedModel.states(self.test_size, assume_runnable=True)
-        for i, s in enumerate(states):
-            yield "check_state.{}".format(i), check_state, s
+        for s in states:
+            check_state(s)
