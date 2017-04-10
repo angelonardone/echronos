@@ -32,7 +32,7 @@ import sys
 import unittest
 
 from rtos import sched
-from pylib.utils import get_executable_extension
+from pylib.utils import get_executable_extension, base_path
 
 NUM_SEMAPHORES = 10
 ALL_SEMAPHORES = list(range(NUM_SEMAPHORES))
@@ -54,7 +54,8 @@ class SemaphoreStruct(ctypes.Structure):
 class SemaphoreTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        r = os.system(sys.executable + " ./prj/app/prj.py build posix.unittest.simple-semaphore")
+        r = os.system("{} {} build posix.unittest.simple-semaphore"
+                      .format(sys.executable, base_path('prj', 'app', 'prj.py')))
         system = "out/posix/unittest/simple-semaphore/system" + get_executable_extension()
         assert r == 0
         cls.impl = ctypes.CDLL(system)

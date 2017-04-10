@@ -84,8 +84,13 @@ def pystache(args):
 @subcmd(cmd="test", args=_std_subcmd_args)
 def units(args):
     """Run rtos unit tests."""
-    result = unittest.main(module=None, argv=['', 'discover', '-s', 'rtos'])
-    if result.testsRun > 0 and result.wasSuccessful():
+    tests_run = 0
+    was_successful = True
+    for path in base_to_top_paths(args.topdir, 'rtos'):
+        result = unittest.main(module=None, argv=['', 'discover', '-s', path])
+        tests_run += result.testsRun
+        was_successful = was_successful and result.wasSuccessful()
+    if tests_run > 0 and was_successful:
         return 0
     else:
         return 1

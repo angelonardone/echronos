@@ -31,13 +31,14 @@ import sys
 import unittest
 
 from rtos import sched
-from pylib.utils import get_executable_extension
+from pylib.utils import get_executable_extension, base_path
 
 
 class TestSimpleMutex(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        r = os.system(sys.executable + " ./prj/app/prj.py build posix.unittest.simple-mutex")
+        r = os.system("{} {} build posix.unittest.simple-mutex"
+                      .format(sys.executable, base_path('prj', 'app', 'prj.py')))
         system = "out/posix/unittest/simple-mutex/system" + get_executable_extension()
         assert r == 0
         cls.impl = ctypes.CDLL(system)
