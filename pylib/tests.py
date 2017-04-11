@@ -403,7 +403,8 @@ class GdbTestCase(unittest.TestCase):
         reference_output = self._get_reference_output()
         if test_output != reference_output:
             new_reference_path = os.path.splitext(self.prx_path)[0] + '.gdboutnew'
-            open(new_reference_path, 'wb').write(self.gdb_output)
+            with open(new_reference_path, 'wb') as file_obj:
+                file_obj.write(self.gdb_output)
             sys.stdout.write('System test failed:\n\t{}\n\t{}\n\t{}\n'.format(self.gdb_commands_path,
                                                                               self.executable_path,
                                                                               new_reference_path))
