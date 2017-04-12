@@ -153,6 +153,8 @@ CORE_SKELETONS = {
                Component('context-switch', pkg_component=True),
                Component('error'),
                Component('task'),
+               Component('api-conditions'),
+               Component('mpu', pkg_component=True),
                ],
     'gatria': [Component('reentrant'),
                Component('stack', pkg_component=True),
