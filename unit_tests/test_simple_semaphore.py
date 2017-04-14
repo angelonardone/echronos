@@ -31,7 +31,7 @@ import os
 import sys
 import unittest
 
-from rtos import sched
+from unit_tests import sched
 from pylib.utils import get_executable_extension, base_path
 
 NUM_SEMAPHORES = 10
