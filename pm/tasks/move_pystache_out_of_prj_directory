@@ -1,0 +1,27 @@
+# Motivation
+
+Currently, the two tools `x.py` and `prj.py` use the pystache Python package.
+This package is located under the `prj` directory and requires the `x.py` tool to manipulate the Python search path for packages to be able to import it.
+If pystache was located under the `external_tools` directory, both tools could import it based on this common package directory.
+This would also improve consistency with other 3rd party Python packages.
+
+
+# Goals
+
+- The pystache package may be updated to the most recent version.
+- To improve the consistency of how 3rd party Python packages are managed, the pystache package shall be moved out of the `prj` directory into the `external_tools` directory.
+- The `x.py` and `prj.py` shall be updated to be able to import pystache from the new location.
+- The build process for the `prj` utility shall be updated so that it continues to include the pystache package in the `prj` executable.
+
+
+# Test Plan
+
+- Verify that all existing regression tests pass.
+- Verify that the changes meet the task goals and follow project conventions.
+- To build the `prj` executable and test its functionality, run the following commands:
+
+    ./x.py build prj
+    ./prj_build/prj build posix.acamar
+
+- Verify that both commands complete successfully.
+  This verifies that the `prj` executable correctly includes and uses pystache.
