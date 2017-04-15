@@ -75,7 +75,7 @@ def x(args):
 def pystache(args):
     """Run tests assocaited with pystache modules."""
     return subprocess.call([sys.executable,
-                            find_path(os.path.join('prj', 'app', 'pystache', 'test_pystache.py'), args.topdir)])
+                            find_path(os.path.join('external_tools', 'pystache', 'test_pystache.py'), args.topdir)])
 
 
 @subcmd(cmd="test", args=_std_subcmd_args)
