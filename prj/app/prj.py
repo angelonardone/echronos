@@ -35,7 +35,7 @@ if __name__ == "__main__":
     import sys
     import os
 
-    for pth in ['../../external_tools', 'ply', 'lib']:
+    for pth in ['../../external_tools', 'lib']:
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), pth))
 
 from util.util import prepend_tool_binaries_to_path_environment_variable
