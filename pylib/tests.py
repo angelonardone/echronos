@@ -224,7 +224,7 @@ def style(args):
     # ignored warnings and errors:
     # E402 module level import not at top of file
     style = pycodestyle.StyleGuide(max_line_length=118, paths=[args.topdir], ignore=['E402'],
-                                   exclude=['external_tools', 'pystache', 'tools', 'ply'] + args.excludes)
+                                   exclude=['external_tools', 'tools'] + args.excludes)
     if args.teamcity:
         style.init_report(_TeamcityReport)
     report = style.check_files()
@@ -244,7 +244,7 @@ def licenses(args):
     sep = os.path.sep
     if sep == '\\':
         sep = '\\\\'
-    pattern = re.compile('\.git|components{0}.*\.(c|h|xml|md)$|external_tools{0}|pm{0}|prj{0}app{0}(ply|pystache){0}|\
+    pattern = re.compile('\.git|components{0}.*\.(c|h|xml|md)$|external_tools{0}|pm{0}|\
 provenance{0}|out{0}|release{0}|prj_build|tools{0}|docs{0}manual_template|packages{0}[^{0}]+{0}rtos-|\
 .*__pycache__'.format(sep))
     for dirpath, subdirs, files in os.walk(BASE_DIR):
