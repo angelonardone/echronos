@@ -59,6 +59,9 @@ disable=no-absolute-import,import-star-module-level,coerce-builtin,reduce-builti
 # Tells whether to display a full report or only the messages
 reports=no
 
+# Activate the evaluation score.
+score=no
+
 [BASIC]
 
 # Regular expression matching correct method names
