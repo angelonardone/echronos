@@ -463,7 +463,7 @@ class PpcQemuTestCase(GdbTestCase):
     @unittest.skipIf(os.name == 'nt', "not supported on this operating system because cross-platform toolchain is not\
  available")
     def setUp(self):
-        super(GdbTestCase, self).setUp()
+        super().setUp()
         self.qemu = subprocess.Popen(('qemu-system-ppc', '-S', '-nographic', '-gdb', 'tcp::18181', '-M', 'ppce500',
                                       '-kernel', self.executable_path))
 
