@@ -719,7 +719,6 @@ def xml2dict(element, schema=None):
                               .format(_type, compound_types + base_types)))
 
     def get_el_val_from_compound_type(element, _type, schema, parent):
-        # pylint: disable=redefined-variable-type
         result = None
 
         if _type == 'dict':
@@ -752,7 +751,6 @@ def xml2dict(element, schema=None):
         return result
 
     def get_el_val_from_base_type(element, _type, schema, parent):
-        # pylint: disable=redefined-variable-type
         result = None
 
         val = get_text_value(element, schema, parent)
