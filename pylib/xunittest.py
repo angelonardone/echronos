@@ -174,11 +174,11 @@ def discover_tests_class(cls):
             else:
                 if inspect.isgeneratorfunction(method):
                     gen = getattr(cls(), name)
-                    for name, *test in gen():
+                    for generated_name, *test in gen():
                         function = functools.partial(*test)
                         testcase = MethodTestCase(function, cls)
                         # pylint: disable=attribute-defined-outside-init
-                        testcase.testcase_name = "{}.{}.{}".format(cls.__module__, cls.__name__, name)
+                        testcase.testcase_name = "{}.{}.{}".format(cls.__module__, cls.__name__, generated_name)
                         yield testcase
                 else:
                     testcase = MethodTestCase(getattr(cls(), name), cls)
@@ -194,10 +194,10 @@ def discover_tests_module(module):
             yield from discover_tests_class(obj)
         elif callable(obj) and re.match('test_.*', name):
             if inspect.isgeneratorfunction(obj):
-                for name, *test in obj():
+                for generated_name, *test in obj():
                     function = functools.partial(*test)
                     testcase = unittest.FunctionTestCase(function)
-                    testcase.testcase_name = "{}.{}:{}".format(obj.__module__, obj.__name__, name)
+                    testcase.testcase_name = "{}.{}:{}".format(obj.__module__, obj.__name__, generated_name)
                     yield testcase
             else:
                 testcase = unittest.FunctionTestCase(obj)
