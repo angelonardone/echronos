@@ -240,7 +240,8 @@ def style(args):
         pylint_result = _run_pylint(excludes, args.print_paths)
     except ImportError as err:
         logging.warning('WARNING: Skipping pylint checks due to ImportError "%s". '
-                        'Most likely, the "pylint" Python package is not available.', err)
+                        'Most likely, the "pylint" Python package is not available. '
+                        'Usually, it can be installed with the command "py/python -m pip install pylint"', err)
         pylint_result = 0
     if result == 0:
         result = pylint_result
