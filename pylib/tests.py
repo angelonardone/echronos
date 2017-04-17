@@ -464,8 +464,7 @@ def systems(args):
 
     if all_tests_passed:
         return 0
-    else:
-        return 1
+    return 1
 
 
 class GdbTestCase(unittest.TestCase):
