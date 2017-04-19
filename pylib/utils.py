@@ -1,4 +1,4 @@
-    #
+#
 # eChronos Real-Time Operating System
 # Copyright (C) 2015  National ICT Australia Limited (NICTA), ABN 62 102 206 173.
 #
@@ -236,8 +236,7 @@ def get_executable_extension():
     if _EXECUTABLE_EXTENSION is None:
         _EXECUTABLE_EXTENSION = {'darwin': '',
                                  'linux': '',
-                                 'win32': '.exe',
-                                }[sys.platform]
+                                 'win32': '.exe'}[sys.platform]
     return _EXECUTABLE_EXTENSION
 
 
@@ -268,8 +267,12 @@ class Git:
 
         """
         assert isinstance(paths, (str, list))
-        make_relative = lambda path: os.path.relpath(path, self.local_repository) if os.path.isabs(path) else path
-        convert = lambda path: make_relative(path).replace(os.sep, self.sep)
+
+        def convert(path):
+            if os.path.isabs(path):
+                path = os.path.relpath(path, self.local_repository)
+            return path.replace(os.sep, self.sep)
+
         if isinstance(paths, str):
             return convert(paths)
         return [convert(path) for path in paths]
@@ -348,10 +351,10 @@ class Git:
 
         """
         params = ['branch']
-        if not track is None:
+        if track is not None:
             params.append('--track' if track else '--no-track')
         params.append(name)
-        if not start_point is None:
+        if start_point is not None:
             params.append(start_point)
         return self._do(params)
 

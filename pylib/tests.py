@@ -213,7 +213,7 @@ def style(args):
     This implements conventions lupHw1 and u1wSS9.
     The enforced maximum line length follows convention TZb0Uv.
 
-    When all project Python files are compliant, this function returns None.
+    When all project Python files are compliant, this function returns 0.
     When a non-compliant file is found, details about the non-compliance are printed on the standard output stream and
     this function returns 1.
     Runtime errors encountered by the style checker are printed on the standard error stream and raised as the
@@ -223,12 +223,10 @@ def style(args):
     result = 0
 
     excludes = ['external_tools', 'pystache', 'tools', 'ply'] + args.excludes
-    exclude_patterns = ','.join(excludes)
-    options = ['--exclude=' + exclude_patterns, '--max-line-length', '118', os.path.join(args.topdir, ".")]
 
-    logging.info('code-style check: ' + ' '.join(options))
-
-    codestyle = pycodestyle.StyleGuide(arglist=options)
+    # ignored warnings and errors:
+    # E402 module level import not at top of file
+    codestyle = pycodestyle.StyleGuide(max_line_length=118, paths=[args.topdir], ignore=['E402'], exclude=excludes)
     if args.teamcity:
         codestyle.init_report(_TeamcityReport)
     report = codestyle.check_files()

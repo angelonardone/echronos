@@ -274,7 +274,7 @@ This is necessary for our review system to work as expected.')
                 raise _InvalidTaskStateError('The task branch is not up-to-date with its remote tracking branch.')
 
         if check_mainline and \
-            not self.name in self._git.get_branches_that_contain_revid(self._mainline_tracking_branch):
+                self.name not in self._git.get_branches_that_contain_revid(self._mainline_tracking_branch):
             self.update(offline=offline)
 
     def _is_on_review(self):

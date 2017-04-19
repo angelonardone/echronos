@@ -51,8 +51,8 @@ def system_build(system):
         os.makedirs(os.path.dirname(obj_file_path), exist_ok=True)
         # gcc options for the PowerPC e500
         execute(['powerpc-linux-gnu-gcc', '-mcpu=8548', '-mfloat-gprs=double', '-meabi', '-mno-sdata', '-G', '0',
-                 '-ffreestanding', '-c', c_file_path, '-o', obj_file_path, '-Wall', '-Werror']
-                + c_flags + inc_path_args)
+                 '-ffreestanding', '-c', c_file_path, '-o', obj_file_path, '-Wall', '-Werror'] +
+                c_flags + inc_path_args)
 
     # Assemble all asm files.
     asm_obj_files = [os.path.join(system.output, os.path.relpath(os.path.abspath(asm_file_path.replace('.s', '.o')),

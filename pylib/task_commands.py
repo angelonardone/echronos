@@ -39,6 +39,7 @@ _OFFLINE_ARG = Arg('-o', '--offline', action='store_true',
                    help='Skip all git commands that require an Internet connection')
 _TASKNAME_ARG = Arg('taskname', nargs='?', help='The name of the task to manage. Defaults to the active git branch.')
 
+
 @cmd(args=(_OFFLINE_ARG, Arg('taskname', help='The name of the task to manage.')),
      help='Developers: create a new task to work on, including a template for the task description.')
 def create(args):

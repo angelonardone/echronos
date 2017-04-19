@@ -65,8 +65,8 @@ def system_build(system, prx_config=None):
                      for asm_file_path in system.asm_files]
     for asm_file_path, obj_file_path in zip(system.asm_files, asm_obj_files):
         os.makedirs(os.path.dirname(obj_file_path), exist_ok=True)
-        execute(['powerpc-eabispe-as', '-me500', '-mspe', '-o', obj_file_path, asm_file_path]
-                + a_flags + inc_path_args)
+        execute(['powerpc-eabispe-as', '-me500', '-mspe', '-o', obj_file_path, asm_file_path] +
+                a_flags + inc_path_args)
 
     # Perform final link
     obj_files = asm_obj_files + c_obj_files

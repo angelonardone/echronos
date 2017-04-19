@@ -77,7 +77,7 @@ class EntryModule(Module):
 
         config.update(super().configure(xml_config))
         # Fill in external IRQ vector list
-        xirqs = [{'handler':'reset'}] * 240
+        xirqs = [{'handler': 'reset'}] * 240
         for xirq in config['external_irqs']:
             xirqs[xirq['number']] = xirq
         config['external_irqs'] = xirqs
